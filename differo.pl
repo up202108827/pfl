@@ -1,5 +1,8 @@
+:- use_module(library(random)).
+:- use_module(library(lists)).
 :- consult(confs).
 :- consult(board).
+
 
 impossible_move(Board, Col1-Row1, Col2-Row2) :-
     delta(Col1, Col2, DeltaCol),
@@ -18,20 +21,18 @@ impossible_move_aux(Board, Col1, Row1, Col2, Row2, Hordir, Verdir) :-
     ColNext is Col1 + Hordir,
     RowNext is Row1 + Verdir,
     position(Board, ColNext-RowNext, Piece),
-    Piece = ' ',
     impossible_move_aux(Board, ColNext, RowNext, Col2, Row2, Hordir, Verdir).
 
 check_move([Board, Player, _], Col1-Row1-Col2-Row2) :-
     in_bounds(Board, Col1-Row1),
     in_bounds(Board, Col2-Row2),
-    valid_move(Board, Col1-Row1, Col2-Row2),
-    \+ path_obstructed(Board, Col1-Row1, Col2-Row2).
+    valid_move(Board, Col1-Row1, Col2-Row2).
 
 valid_move(Board, Col1-Row1, Col2-Row2) :-
     position(Board, Col1-Row1, Piece1),
     position(Board, Col2-Row2, Piece2),
-    Piece1 \= ' ', Piece2 \= ' ',
-    valid_direction(Piece1, Col1-Row1, Col2-Row2).
+    valid_direction(Piece1, Col1-Row1, Col2-Row2),
+    \+ path_obstructed(Board, Col1-Row1, Col2-Row2).
 
 move_direction(Delta, Dir) :-
     (Delta < 0 -> Dir is -1 ; Delta > 0 -> Dir is 1 ; Dir is 0).
@@ -44,14 +45,14 @@ print_winner([_, _, TotalMoves], Winner) :-
     moves_to_win(TotalMoves, WinnerMoves),
     format('Winner is ~a with ~d moves!\n', [Name, WinnerMoves]).
 
-play_game(GameState) :-
+game_loop(GameState) :-
     play_game_loop(GameState).
 
 play_game_loop(GameState) :-
     display_game_state(GameState),
     print_player_turn(GameState),
-    choose_next_move(GameState, Move),
-    make_move(GameState, Move, NewGameState),
+    select_move(GameState, Move),
+    perform_move(GameState, Move, NewGameState),
     play_game_loop(NewGameState).
 
 print_player_turn([_, CurrentPlayer, _]) :-
@@ -59,7 +60,7 @@ print_player_turn([_, CurrentPlayer, _]) :-
     format('~a\'s turn!\n', [Name]).
 
 display_game_state([Board, _, _]) :-
-    clear_console,
+    clean_console,
     display_game_header(1, 17),
     display_game_separator(17),
     display_game_board(Board, 1).
@@ -101,6 +102,6 @@ perform_move(GameState, Col1-Row1-Col2-Row2, NewGameState) :-
     NewGameState = [NewBoard2, OtherPlayer, NewTotalMoves].
 
 play_game :-
-    setup_game(GameState),
+    confs(GameState),
     game_loop(GameState),
     clear_data.

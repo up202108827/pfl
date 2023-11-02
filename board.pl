@@ -7,7 +7,7 @@
 in_bounds(Board, Col-Row) :-
     length(Board, 9),
     length(Board, 17),
-    (Row >= 1, Row =< 9)
+    (Row >= 1, Row =< 9),
     (Col >= 1, Col =< 17).
 
 
@@ -50,7 +50,7 @@ display_pieces(Board, Line, Col) :-
     Col1 is Col+1,
     display_pieces(Board, Line, Col1).
 
-    
+
 display_game_board(_, Line) :-
     Line > 9 ,nl, !.
 

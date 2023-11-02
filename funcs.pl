@@ -1,4 +1,5 @@
 
+
 % Initialize the random number generator state
 initiate_random :-
     now(X),
@@ -8,13 +9,13 @@ initiate_random :-
 clean_data :-
     retractall(white(_)),
     retractall(black(_)),
-    retractall(difficulty(_,_)),
+    retractall(difficulty(_,_)).
 
 clean_buffer :-
     flush_output(current_input).
 
 clean_console :-
-    shell(clear, _).
+    write('\33\[2J').
 
 % Read an integer from input
 read_integer(X) :-

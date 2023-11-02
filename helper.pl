@@ -1,4 +1,3 @@
-:- dynamic name_of/2.
 :- dynamic difficulty/2.
 :- dynamic nonblock/1.
 :- dynamic white/1.

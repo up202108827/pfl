@@ -1,4 +1,5 @@
 :- use_module(library(lists)).
+:- use_module(library(system), [now/1]).
 :- consult(funcs).
 :- consult(helper).
 
@@ -24,14 +25,11 @@ choose_difficulty(Player) :-
 
 
 option(2):- 
-    choose_difficulty(player2),
     choose_difficulty(player2).
 
 option(3):-
     choose_difficulty(player1),
-    choose_difficulty(player2),
-    choose_difficulty(player1),
-    choose_difficulty(player2).
+    choose_difficulty(player2). 
 
 first_player(Player):-
     format('Who starts playing?\n1 - ~a \n2 - ~a \n', ['Player 1', 'Player 2']),
