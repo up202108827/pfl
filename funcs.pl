@@ -49,10 +49,6 @@ get_coordinates(MaxCols, MaxRows, Context, Col-Row) :-
     format('Enter the ~w row (1 to ~d): ', [Context, MaxRows]),
     get_option(1, MaxRows, '', Row).
 
-% Read a line of input and return it as a string
-read_line(Line) :-
-    read_line_helper(Line, []).
-
 replace_element_at(Index, Element, List, NewList) :-
     list_to_end(Index, List, Prefix, [_|Suffix]),
     append(Prefix, [Element|Suffix], NewList).

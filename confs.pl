@@ -18,8 +18,7 @@ play_game :-
 choose_difficulty(Player) :-
     write('Choose a difficulty level:\n'), nl,
     write('1. Easy\n'), nl,
-    write('2. Medium\n'), nl,
-    write('3. Hard\n'), nl,
+    write('2. Hard\n'), nl,
     read(DifficultyChoice),
     asserta(difficulty(Player, DifficultyChoice)).
 
@@ -32,7 +31,7 @@ option(3):-
     choose_difficulty(player2). 
 
 first_player(Player):-
-    format('Who starts playing?\n1 - ~a \n2 - ~a \n', ['Player 1', 'Player 2']),
+    format('Who starts playing?\n \n1 - ~a \n \n2 - ~a \n \n', ['Player 1', 'Player 2']),
     read(Index),
     nth1(Index, [player1, player2], Player).
 

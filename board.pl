@@ -21,20 +21,18 @@ move_piece(Board, Col-Row, Piece, NewBoard) :-
     replace(Col2, Piece, Line, NewLine),
     replace(Row2, NewLine, Board, NewBoard).
 
-
 display_game_header(1, Max) :-
-    format('    ~d   ', [1]),
-    display_game_header(2, Max).
+    format('    ~d\n  ', [1]).
+ 
 
 display_game_header(N, Max) :-
-    N =:= Max -> format('~d\n  ', [Max]), !;
-    (N >= 9 ->
+    (N =:= Max -> format('~d\n  ', [Max]), !;
+    N > 9 ->
         format('~d  ', [N]);
         format('~d   ', [N])
     ),
     N1 is N + 1,
     display_game_header(N1, Max).
-
 
 get_symbol(Board, Line, Col, Symbol) :-
     position(Board, Col-Line, Piece),
@@ -50,7 +48,7 @@ display_pieces(Board, Line, Col) :-
     display_pieces(Board, Line, Col1).
 
 
-display_game_board(_, Line) :-
+display_game_board(Board, Line) :-
     Line > 9 ,nl, !.
 
 display_game_board(Board, Line) :-
@@ -82,4 +80,4 @@ position(Board, Col-Row, Piece) :-
 
 
 initialize_board(Board) :-
-    board(Board).
+    board(Board), !.
