@@ -6,7 +6,7 @@
 
 
 % Main predicate to start the game menu
-play :-
+play_game :-
     write('Welcome to Differo! Choose a game type:\n'), nl,
     write('1. Human vs. Human \n'), nl,
     write('2. Human vs. PC \n'), nl,
@@ -37,7 +37,9 @@ first_player(Player):-
     nth1(Index, [player1, player2], Player).
 
 confs([Board, Player, 0]) :- 
-        play,
-        initiate_random,
+        play_game,
+        initiate_random,  
         first_player(Player),
         initialize_board(Board).
+
+

@@ -22,20 +22,19 @@ move_piece(Board, Col-Row, Piece, NewBoard) :-
     replace(Row2, NewLine, Board, NewBoard).
 
 
-display_game_header(Max) :-
-    format('    1   '),
+display_game_header(1, Max) :-
+    format('    ~d   ', [1]),
     display_game_header(2, Max).
 
-display_game_header(Max, Max) :-
-    format('~d\n  ', [Max]).
-
 display_game_header(N, Max) :-
-    (N > 9 ->
+    N =:= Max -> format('~d\n  ', [Max]), !;
+    (N >= 9 ->
         format('~d  ', [N]);
         format('~d   ', [N])
     ),
     N1 is N + 1,
     display_game_header(N1, Max).
+
 
 get_symbol(Board, Line, Col, Symbol) :-
     position(Board, Col-Line, Piece),

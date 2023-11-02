@@ -37,49 +37,46 @@ valid_move(Board, Col1-Row1, Col2-Row2) :-
 move_direction(Delta, Dir) :-
     (Delta < 0 -> Dir is -1 ; Delta > 0 -> Dir is 1 ; Dir is 0).
 
-moves_to_win(Moves, WinnerMoves) :-
-    WinnerMoves is (Moves + 1) // 2.
-
 print_winner([_, _, TotalMoves], Winner) :-
     (Winner =:= 1 -> Name = 'Player 1' ; Name = 'Player 2').
-    moves_to_win(TotalMoves, WinnerMoves),
-    format('Winner is ~a with ~d moves!\n', [Name, WinnerMoves]).
+    FinalMoves is (TotalMoves + 1) // 2.
+    format('Winner is ~a with ~d moves!\n', [Name, FinalMoves]).
 
 game_loop(GameState) :-
     play_game_loop(GameState).
 
 play_game_loop(GameState) :-
-    display_game_state(GameState),
+    display_game(GameState),
     print_player_turn(GameState),
-    select_move(GameState, Move),
+    choose_move(GameState, Move),
     perform_move(GameState, Move, NewGameState),
     play_game_loop(NewGameState).
 
 print_player_turn([_, CurrentPlayer, _]) :-
-    (CurrentPlayer =:= 1 -> Name = 'Player 1' ; Name = 'Player 2').
+    (CurrentPlayer == 'player1' -> Name = 'Player 1' ; Name = 'Player 2').
     format('~a\'s turn!\n', [Name]).
 
-display_game_state([Board, _, _]) :-
+display_game([Board, _, _]) :-
     clean_console,
     display_game_header(1, 17),
     display_game_separator(17),
     display_game_board(Board, 1).
 
-select_move(GameState, Col1-Row1-Col2-Row2) :-
-    \+ difficulty_level(CurrentPlayer, _),
+choose_move(GameState, Col1-Row1-Col2-Row2) :-
+    \+ difficulty(CurrentPlayer, _),
     repeat,
     get_player_move(Board, Col1-Row1-Col2-Row2),
     check_move(GameState, Col1-Row1-Col2-Row2), !.
 
-select_move(GameState, Move) :-
-    difficulty_level(CurrentPlayer, Level),
-    select_best_move(GameState, CurrentPlayer, Level, Move), !.
+choose_move(GameState, Move) :-
+    difficulty(CurrentPlayer, Level),
+    choose_move(GameState, CurrentPlayer, Level, Move), !.
 
-select_best_move(GameState, CurrentPlayer, 1, Col1-Row1-Col2-Row2) :-
+choose_move(GameState, CurrentPlayer, 1, Col1-Row1-Col2-Row2) :-
     valid_moves(GameState, CurrentPlayer, ListOfMoves),
     random_select_move(ListOfMoves, Col1-Row1-Col2-Row2).
 
-select_best_move(GameState, CurrentPlayer, 2, Col1-Row1-Col2-Row2) :-
+choose_move(GameState, CurrentPlayer, 2, Col1-Row1-Col2-Row2) :-
     valid_moves(GameState, CurrentPlayer, ListOfMoves),
     other_player(Player, NewPlayer),
 	findall(Value-Coordinate, ( member(Coordinate, ListOfMoves), 
@@ -92,7 +89,7 @@ select_best_move(GameState, CurrentPlayer, 2, Col1-Row1-Col2-Row2) :-
     findall(Coordinates, member(Max-Coordinates, SortedPairs), MaxCoordinates),
     random_member(ColI-RowI-ColF-RowF, MaxCoordinates).
 
-perform_move(GameState, Col1-Row1-Col2-Row2, NewGameState) :-
+move(GameState, Col1-Row1-Col2-Row2, NewGameState) :-
     [Board, CurrentPlayer, TotalMoves] = GameState,
     position(Board, Col1-Row1, Piece),
     move_piece(Board, Col1-Row1, empty,  NewBoard1),
@@ -101,7 +98,7 @@ perform_move(GameState, Col1-Row1-Col2-Row2, NewGameState) :-
     NewTotalMoves is TotalMoves + 1,
     NewGameState = [NewBoard2, OtherPlayer, NewTotalMoves].
 
-play_game :-
+play :-
     confs(GameState),
     game_loop(GameState),
     clear_data.
