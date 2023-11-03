@@ -4,97 +4,82 @@
 :- consult(board).
 
 
-valid_moves([Board, Player, _], Player, ValidMoves) :-
+valid_moves([Board, Player, _, _ , _], Player, ValidMoves) :-
     findall(Col1-Row1-Col2-Row2, (
         member(Col1-Row1, Board),
         position(Board, Col1-Row1, Player), % Check if the piece belongs to the current player
         move_directions(Directions), % Define the possible move directions
         member(Direction, Directions),
+        write('iii'),
         is_valid_move([Board, Player, _], Col1-Row1, Direction, Col2-Row2)
     ), ValidMoves).
 
 % Define the move_directions predicate to specify the possible move directions
-move_directions([up, down, left_up, left_down, right_up, right_down]).
+move_directions([left, right, left_up, left_down, right_up, right_down]).
 
 % Define the is_valid_move predicate to check if a move is valid
-is_valid_move([Board, _, _], Col1-Row1, Direction, Col2-Row2) :-
-    next_position(Col1-Row1, Direction, Col2-Row2),
+is_valid_move([Board, _, _, _, _], Col1-Row1, Direction, Col2-Row2) :-
+    next_position(Col1-Row1, Direction, Value, Col2-Row2),
     in_bounds(Board, Col2-Row2), % Check if the move is within the board bounds
     position(Board, Col2-Row2, empty), % Check if the target position is empty
+    write('jjj'),
     path_clear(Board, Col1-Row1, Col2-Row2), % Check if the path is clear (no pieces in between)
     not_in_goal(Col2-Row2). % Check if the target position is not the opponents goal
 
 % Define the next_position predicate to calculate the next position based on the direction
-next_position(Col1-Row1, up, Col2-Row2) :-
-    Col2 is Col1,
-    Row2 is Row1 - 1.
-next_position(Col1-Row1, down, Col2-Row2) :-
-    Col2 is Col1,
-    Row2 is Row1 + 1.
-next_position(Col1-Row1, left_up, Col2-Row2) :-
-    Col2 is Col1 - 1,
+next_position(Col1-Row1, left, Value, Col2-Row2) :-
+    Col2 is Col1 - Value,
     Row2 is Row1.
-next_position(Col1-Row1, left_down, Col2-Row2) :-
-    Col2 is Col1 - 1,
-    Row2 is Row1 + 1.
-next_position(Col1-Row1, right_up, Col2-Row2) :-
-    Col2 is Col1 + 1,
-    Row2 is Row1 - 1.
-next_position(Col1-Row1, right_down, Col2-Row2) :-
-    Col2 is Col1 + 1,
+next_position(Col1-Row1, right, Value, Col2-Row2) :-
+    Col2 is Col1 + Value,
     Row2 is Row1.
+next_position(Col1-Row1, left_up, Value, Col2-Row2) :-
+    Col2 is Col1 - Value,
+    Row2 is Row1 - Value.
+next_position(Col1-Row1, left_down, Value, Col2-Row2) :-
+    Col2 is Col1 - Value,
+    Row2 is Row1 + Value.
+next_position(Col1-Row1, right_up, Value, Col2-Row2) :-
+    Col2 is Col1 + Value,
+    Row2 is Row1 - Value.
+next_position(Col1-Row1, right_down, Value, Col2-Row2) :-
+    Col2 is Col1 + Value,
+    Row2 is Row1 + Value.
 
 
-% Define path_clear predicate to check if the path between two positions is clear
-path_clear(Board, Col1-Row1, Col2-Row2) :-
-    path_obstructed(Board, Col1-Row1, Col2-Row2).
+% Count black and white pieces on both diagonals for a given piece
+count_diagonal_pieces(Board, Col-Row, BlackCount, WhiteCount) :-
+    count_pieces_on_diagonal(Board, Col-Row, up_left, BlackCount1, WhiteCount1),
+    count_pieces_on_diagonal(Board, Col-Row, up_right, BlackCount2, WhiteCount2),
+    BlackCount is BlackCount1 + BlackCount2,
+    WhiteCount is WhiteCount1 + WhiteCount2.
 
-% Define path_obstructed predicate to check if there are pieces in the path between two positions
-path_obstructed(Board, Col1-Row1, Col2-Row2) :-
-    move_direction(DeltaCol, DeltaRow, Col1-Row1, Col2-Row2),
-    path_obstructed_aux(Board, Col1, Row1, Col2, Row2, DeltaCol, DeltaRow).
 
-path_obstructed_aux(_, Col1, Row1, Col2, Row2, _, _) :-
-    % Base case: When the two positions are the same, there is no obstruction.
-    Col1 =:= Col2,
-    Row1 =:= Row2.
+% Count pieces on a single diagonal
+count_pieces_on_diagonal(Board, Col-Row, Direction, BlackCount, WhiteCount) :-
+    (Direction = up_left ->
+        count_pieces_on_diagonal_aux(Board, Col, Row, -1, -1, BlackCount1, WhiteCount1),
+        count_pieces_on_diagonal_aux(Board, Col, Row, 1, 1, BlackCount2, WhiteCount2);
+        count_pieces_on_diagonal_aux(Board, Col, Row, 1, -1, BlackCount1, WhiteCount1),
+        count_pieces_on_diagonal_aux(Board, Col, Row, -1, 1, BlackCount2, WhiteCount2)),
+    BlackCount is BlackCount1 + BlackCount2,
+    WhiteCount is WhiteCount1 + WhiteCount2, !.
 
-path_obstructed_aux(Board, Col1, Row1, Col2, Row2, DeltaCol, DeltaRow) :-
-    % Recursive case: Check if there is a piece at the next position along the path.
-    ColNext is Col1 + DeltaCol,
-    RowNext is Row1 + DeltaRow,
-    position(Board, ColNext-RowNext, Piece),
-    Piece \= empty,
-    path_obstructed_aux(Board, ColNext, RowNext, Col2, Row2, DeltaCol, DeltaRow).
+count_pieces_on_diagonal_aux(_, _, _, 0, 0, 0, 0). % Base case: No more steps to count
 
-% Define move_direction predicate to calculate the direction of movement
-move_direction(DeltaCol, DeltaRow, Col1-Row1, Col2-Row2) :-
-    DeltaCol is abs(Col2 - Col1),
-    DeltaRow is abs(Row2 - Row1),
-    (DeltaCol =:= 1 ; DeltaRow =:= 1 ; (DeltaCol =:= DeltaRow, DeltaCol =\= 0)).
+count_pieces_on_diagonal_aux(Board, Col, Row, DeltaCol, DeltaRow, BlackCount, WhiteCount) :-
+    Col2 is Col + DeltaCol,
+    Row2 is Row + DeltaRow,
+    position(Board, Col2-Row2, Piece),
+    (Piece = nonblock -> B is 0, !.)
+    (Piece = black -> BlackCount1 is 1, WhiteCount1 is 0; Piece = white -> BlackCount1 is 0, WhiteCount1 is 1; BlackCount1 is 0, WhiteCount1 is 0),
+    BlackCount2 is BlackCount1 + BlackCount,
+    WhiteCount2 is WhiteCount1 + WhiteCount,
+    count_pieces_on_diagonal_aux(Board, Col2, Row2, DeltaCol, DeltaRow, BlackCount2, WhiteCount2).
 
-% Define not_in_goal predicate to check if a position is not the opponents goal
-not_in_goal(Col-Row) :- % Define the conditions to check if a position is not in the opponents goal.
-    % You may need to specify the rules for the goal positions based on the board layout.
-    % For example, if the goal is in the last row for player1 and the first row for player2:
-    Player == player1,
-    Row \= 1.
 
-not_in_goal(Col-Row) :- % Define the conditions for player2 goal.
-    Player == player2,
-    Row \= MaxRows.
 
-get_direction(Col1-Row1-Col2-Row2, Direction) :-
-    DeltaCol is Col2 - Col1,
-    DeltaRow is Row2 - Row1,
-    (DeltaCol =:= 0, DeltaRow =:= -1, Direction = up;
-     DeltaCol =:= 0, DeltaRow =:= 1, Direction = down;
-     DeltaCol =:= -1, DeltaRow =:= 0, Direction = left;
-     DeltaCol =:= -1, DeltaRow =:= 1, Direction = left_down;
-     DeltaCol =:= 1, DeltaRow =:= -1, Direction = right_up;
-     DeltaCol =:= 1, DeltaRow =:= 0, Direction = right).
-
-print_winner([_, _, TotalMoves], Winner) :-
+print_winner([_, _, TotalMoves, _, _], Winner) :-
     (Winner == 'player1' -> Name = 'Player 1' ; Name = 'Player 2'),
     FinalMoves is (TotalMoves + 1) // 2,
     format('Winner is ~a with ~d moves!\n', [Name, FinalMoves]).
@@ -110,11 +95,11 @@ play_game_loop(GameState) :-
     move(GameState, Move, NewGameState),
     play_game_loop(NewGameState).
 
-print_player_turn([_, CurrentPlayer, _]) :-
+print_player_turn([_, CurrentPlayer, _, _, _]) :-
     (CurrentPlayer == 'player1' -> Name = 'Player 1' ; Name = 'Player 2'),
     format('~a\'s turn!\n', [Name]).
 
-display_game([Board, _, _]) :-
+display_game([Board, _, _, _, _]) :-
     clean_console,
     display_game_header(1, 17),
     display_game_separator(17),
@@ -129,29 +114,25 @@ get_player_move(Board, Col1, Row1, Col2, Row2) :-
     atom_number(Col2Str, Col2),
     atom_number(Row2Str, Row2).
 
-
-choose_move(GameState, Col1-Row1-Col2-Row2) :-
+choose_move([Board, Player, _, _ , _], Col1-Row1-Col2-Row2) :-
     write('BBB'),
-    \+ difficulty(CurrentPlayer, _),
-    repeat,
-    get_player_move(Board, Col1, Row1, Col2, Row2),
-    write('ccc'),
-    get_direction(Col1-Row1-Col2-Row2, Direction),
-    is_valid_move(GameState, Col1-Row1, Direction, Col2-Row2), !.
+    format('~a\n', [Player]),
+    (difficulty(Player, 0) ->
+        (get_player_move(Board, Col1, Row1, Col2, Row2),
+         write('ccc'),
+         get_direction(Col1-Row1-Col2-Row2, Direction),
+         is_valid_move(GameState, Col1-Row1, Direction, Col2-Row2), !)
+    ;
+    choose_move(GameState, Player, Level, Move), !).
 
-choose_move(GameState, Move) :-
-    write('ddd'),
-    difficulty(CurrentPlayer, Level),
-    choose_move(GameState, CurrentPlayer, Level, Move), !.
-
-choose_move(GameState, CurrentPlayer, 1, Col1-Row1-Col2-Row2) :-
+choose_move(GameState, Player, 1, Col1-Row1-Col2-Row2) :-
     write('eee'),
-    valid_moves(GameState, CurrentPlayer, ListOfMoves),
-    random_member(Move, ListOfMoves).
+    valid_moves(GameState, Player, ListOfMoves),
+    random_member(Move, ListOfMoves), !.
 
-choose_move(GameState, CurrentPlayer, 2, Col1-Row1-Col2-Row2) :-    
+choose_move(GameState, Player, 2, Col1-Row1-Col2-Row2) :-    
     write('fff'),
-    valid_moves(GameState, CurrentPlayer, ListOfMoves),
+    valid_moves(GameState, Player, ListOfMoves),
     other_player(Player, NewPlayer),
     write('ggg'),
 	findall(Value-Coordinate, ( member(Coordinate, ListOfMoves), 
@@ -163,20 +144,20 @@ choose_move(GameState, CurrentPlayer, 2, Col1-Row1-Col2-Row2) :-
     last(SortedPairs, Max-_),
     write('hhh'),
     findall(Coordinates, member(Max-Coordinates, SortedPairs), MaxCoordinates),
-    random_member(ColI-RowI-ColF-RowF, MaxCoordinates).
+    random_member(ColI-RowI-ColF-RowF, MaxCoordinates), !.
 
 move(GameState, Col1-Row1-Col2-Row2, NewGameState) :-
-    [Board, CurrentPlayer, TotalMoves] = GameState,
+    [Board, Player, TotalMoves] = GameState,
     position(Board, Col1-Row1, Piece),
     move_piece(Board, Col1-Row1, empty,  NewBoard1),
     move_piece(Board, Col2-Row2, piece, NewBoard2),
-    other_player(CurrentPlayer, OtherPlayer),
+    other_player(Player, OtherPlayer),
     NewTotalMoves is TotalMoves + 1,
     NewGameState = [NewBoard2, OtherPlayer, NewTotalMoves].
 
 
 % Define the value predicate (simple piece count as the heuristic)
-value([Board, Player, _], Player, Value) :-
+value([Board, Player, _, _, _], Player, Value) :-
     count_pieces(Board, Player, Count),
     Value is Count.
 

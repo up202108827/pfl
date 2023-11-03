@@ -22,8 +22,12 @@ choose_difficulty(Player) :-
     read(DifficultyChoice),
     asserta(difficulty(Player, DifficultyChoice)).
 
+option(1):- 
+    asserta(difficulty(player1, 0)),
+    asserta(difficulty(player2, 0)).
 
 option(2):- 
+    asserta(difficulty(player1, 0)),
     choose_difficulty(player2).
 
 option(3):-
@@ -35,7 +39,7 @@ first_player(Player):-
     read(Index),
     nth1(Index, [player1, player2], Player).
 
-confs([Board, Player, 0]) :- 
+confs([Board, Player, 0, WhitePieces, BlackPieces]) :- 
         play_game,
         initiate_random,  
         first_player(Player),
