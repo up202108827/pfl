@@ -10,6 +10,12 @@ in_bounds(Board, Col-Row) :-
     (Row >= 1, Row =< 9),
     (Col >= 1, Col =< 17).
 
+replace(0, NewElement, [_|Tail], [NewElement|Tail]).
+replace(Index, NewElement, [Head|Tail], [Head|NewTail]) :-
+    Index > 0,
+    Index1 is Index - 1,
+    replace(Index1, NewElement, Tail, NewTail).
+
 
 move_piece(Board, Col-Row, empty, NewBoard) :-
     move_piece(Board, Col-Row, nonblock, NewBoard).
@@ -73,10 +79,28 @@ position(Board, Col-Row, Piece) :-
     nth1(Col, Line, Piece).
 
 
-position(Board, Col-Row, Piece) :-
-    nth1(Row, Board, Line),
-    nth1(Col, Line, Piece),
-    Piece \= empty, !.
+% Initialize the piece lists for both players
+extract_pieces([Board,_,_,_,_], WhitePieces, BlackPieces) :-
+    extract_pieces(Board, 0, 0, WhitePieces, BlackPieces).
+
+extract_pieces([], _, _, [], []).
+extract_pieces([Row | Rest], RowIndex, 0, WhitePieces, BlackPieces) :-
+    extract_pieces_in_row(Row, RowIndex, 0, WhitePieces1, BlackPieces1),
+    NextRowIndex is RowIndex + 1,
+    extract_pieces(Rest, NextRowIndex, 0, WhitePieces2, BlackPieces2),
+    append(WhitePieces1, WhitePieces2, WhitePieces),
+    append(BlackPieces1, BlackPieces2, BlackPieces).
+
+extract_pieces_in_row([], _, _, [], []).
+extract_pieces_in_row([white | Rest], RowIndex, ColIndex, [(RowIndex, ColIndex) | WhitePieces], BlackPieces) :-
+    NextColIndex is ColIndex + 1,
+    extract_pieces_in_row(Rest, RowIndex, NextColIndex, WhitePieces, BlackPieces).
+extract_pieces_in_row([black | Rest], RowIndex, ColIndex, WhitePieces, [(RowIndex, ColIndex) | BlackPieces]) :-
+    NextColIndex is ColIndex + 1,
+    extract_pieces_in_row(Rest, RowIndex, NextColIndex, WhitePieces, BlackPieces).
+extract_pieces_in_row([_ | Rest], RowIndex, ColIndex, WhitePieces, BlackPieces) :-
+    NextColIndex is ColIndex + 1,
+    extract_pieces_in_row(Rest, RowIndex, NextColIndex, WhitePieces, BlackPieces).
 
 
 initialize_board(Board) :-

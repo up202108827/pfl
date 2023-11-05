@@ -1,9 +1,5 @@
 
 
-% Initialize the random number generator state
-initiate_random :-
-    now(X),
-    setrand(X).
 
 % Clear certain data from the knowledge base
 clean_data :-
@@ -17,24 +13,11 @@ clean_buffer :-
 clean_console :-
     write('\33\[2J').
 
-% Read an integer from input
-read_integer(X) :-
-    read_integer_aux(X, 0).
-
-read_integer_aux(X, Acc) :-
-    get_code(Code),
-    (Code >= 48, Code =< 57) , !,
-    Digit is Code - 48,
-    NewAcc is 10 * Acc + Digit,
-    read_integer_aux(X, NewAcc).
-
-read_integer_aux(X, X).
-
 
 chose_option(Min, Max, Context, Value) :-
     format('~a between ~d and ~d: ', [Context, Min, Max]),
     repeat,
-    read_integer(Value),
+    read(Value),
     (Min =< Value, Value =< Max) -> ! ; fail.
 
 get_player_move(Board, Col1-Row1-Col2-Row2) :-

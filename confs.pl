@@ -2,6 +2,7 @@
 :- use_module(library(system), [now/1]).
 :- consult(funcs).
 :- consult(helper).
+:- consult(board).
 
 
 
@@ -41,7 +42,7 @@ first_player(Player):-
 
 confs([Board, Player, 0, WhitePieces, BlackPieces]) :- 
         play_game,
-        initiate_random,  
+        write('confs'),        
         first_player(Player),
         initialize_board(Board).
 
