@@ -22,6 +22,22 @@ Tem como objetivo chegar a uma das casas horizontais do lado contrário à que a
 
 ### Representação do estado interno do jogo
 
+O tabuleiro é representado como uma lista de listas, onde cada elemento da lista interna representa uma casa do tabuleiro. Os elementos dessas listas internas podem ser peças do jogo ("white" para as peças brancas, "black" para as peças pretas), casas vazias representadas por "empty" ou células que não são usadas no jogo ("nonblock").
+
+Estado inicial: '
+board([
+    [nonblock, nonblock, nonblock, nonblock, wgoal, nonblock, wgoal, nonblock, wgoal, nonblock, wgoal, nonblock, wgoal, nonblock, nonblock, nonblock, nonblock],
+    [nonblock, nonblock, nonblock, empty, nonblock, black, nonblock, black, nonblock, black, nonblock, black, nonblock, empty, nonblock, nonblock, nonblock],
+    [nonblock, nonblock, empty, nonblock, black, nonblock, empty, nonblock, black, nonblock, empty, nonblock, black, nonblock, empty, nonblock, nonblock],
+    [nonblock, empty, nonblock, black, nonblock, black, nonblock, black, nonblock, black, nonblock, black, nonblock, black, nonblock, empty, nonblock],
+    [empty, nonblock, empty, nonblock, empty, nonblock, empty, nonblock, empty, nonblock, empty, nonblock, empty, nonblock, empty, nonblock, empty],
+    [nonblock, empty, nonblock, white, nonblock, white, nonblock, white, nonblock, white, nonblock, white, nonblock, white, nonblock, empty, nonblock],
+    [nonblock, nonblock, empty, nonblock, white, nonblock, empty, nonblock, white, nonblock, empty, nonblock, white, nonblock, empty, nonblock, nonblock],
+    [nonblock, nonblock, nonblock, empty, nonblock, white, nonblock, white, nonblock, white, nonblock, white, nonblock, empty, nonblock, nonblock, nonblock],
+    [nonblock, nonblock, nonblock, nonblock, bgoal, nonblock, bgoal, nonblock, bgoal, nonblock, bgoal, nonblock, bgoal, nonblock, nonblock, nonblock, nonblock]
+]).
+'
+
 ### Visualização do estado do jogo
 
 ### Validação e execução do movimento
